@@ -1,5 +1,6 @@
 import Peer from "peerjs";
 import io from "socket.io-client";
+import { ApiService } from "./ApiServices";
 
 export class PeerManager {
   constructor() {
@@ -25,7 +26,6 @@ export class PeerManager {
       call.answer(this.stream);
       call.on("stream", remoteStream => {
         this.addRemoteStream(id, remoteStream);
-        console.log(this.remoteStreams);
       })
     })
 
@@ -36,12 +36,7 @@ export class PeerManager {
     this.peers[id] = call;
     call.on("stream", remoteStream => {
       this.addRemoteStream(id, remoteStream);
-      console.log(this.remoteStreams);
     });
-
-    call.on("close", () => {
-      console.log("remote user disconnected");
-    })
   }
 
   registerStreams(callback) {
@@ -52,12 +47,17 @@ export class PeerManager {
     document.removeEventListener("onReceiveStreams", callback);
   }
 
+  onUserDisconnected(callback) {
+    document.addEventListener("onUserDisconnected", callback);
+  }
 
-  dispatchEvent() {
-    const event = new CustomEvent("onReceiveStreams", {
-      detail: {
-        streams: this.remoteStreams
-      }
+  onNewRoom(callback) {
+    this.socket.on("create-room-success", callback);
+  }
+
+  dispatchEvent(eventName, data) {
+    const event = new CustomEvent(eventName, {
+      detail: data
     });
     document.dispatchEvent(event);
   }
@@ -71,20 +71,33 @@ export class PeerManager {
     });
 
     this.socket.on("user-disconnected", userId => {
-      this.peers[userId].close();
+      if (this.peers[userId]) {
+        this.peers[userId].close();
+      }
+      this.dispatchEvent("onUserDisconnected", { userId: userId });
     })
   }
 
   leaveRoom(roomId) {
     this.socket.emit("leave-room", roomId, this.id);
+    this.stream.getTracks()[0].stop();
+    this.stream.getTracks()[1].stop();
   }
 
+  createNewRoom() {
+    ApiService.createRoom().then(res => {
+      this.socket.emit("alert-create-room")
+    }).catch(err => {
+      console.log(err);
+    })
+  }
 
   addRemoteStream(userId, remoteStream) {
     const index = this.remoteStreams.findIndex(stream => stream.id === remoteStream.id);
     if (index === -1) {
+      remoteStream.userId = userId;
       this.remoteStreams.push(remoteStream);
-      this.dispatchEvent();
+      this.dispatchEvent("onReceiveStreams", { streams: this.remoteStreams });
     }
   }
 }

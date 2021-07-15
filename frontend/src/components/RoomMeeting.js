@@ -41,15 +41,17 @@ const Wrapper = styled.div`
   }
 `
 
-export const RoomMeeting = ({ joined }) => {
+export const RoomMeeting = ({ joined, setJoined }) => {
 
   const peer = usePeerContext();
   const videoRef = useRef(null);
   const videoGrid = useRef(null);
+  const videoList = useRef({});
   const streamIdList = useRef([]);
 
   useEffect(() => {
     peer.registerStreams(renderPeerVideos);
+    peer.onUserDisconnected(removeVideo)
   }, []);
 
   useEffect(() => {
@@ -65,6 +67,14 @@ export const RoomMeeting = ({ joined }) => {
     }
   }, [joined]);
 
+  const removeVideo = (e) => {
+    const id = e.detail.userId;
+    if(videoList.current[id]) {
+      videoList.current[id].remove();
+      delete videoList.current[id];
+    }
+  }
+
   const renderPeerVideos = (e) => {
     const streams = e.detail.streams;
 
@@ -76,10 +86,16 @@ export const RoomMeeting = ({ joined }) => {
         video.srcObject = stream;
         video.play();
         videoGrid.current.append(video);
+        videoList.current[stream.userId] = video;
         idList.push(stream.id);
       }
     })
     streamIdList.current = [...idList]
+  }
+
+  const leaveRoom = () => {
+    peer.leaveRoom();
+    setJoined(false);
   }
 
   return joined && (
@@ -93,7 +109,7 @@ export const RoomMeeting = ({ joined }) => {
             <div className="info-label">ROOM ID: </div>
             <div className="info-label">USER ID: </div>
           </div>
-          <Button> Leave Room </Button>
+          <Button onClick={leaveRoom}> Leave Room </Button>
         </div>
       </div>
       <div ref={videoGrid} className="guest-zone">

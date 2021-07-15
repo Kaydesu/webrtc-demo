@@ -29,7 +29,7 @@ export const ChatRoom = () => {
         <RoomController setJoined={setJoined} />
       </div>
       <div className="layout-split">
-        <RoomMeeting joined={joined} />
+        <RoomMeeting joined={joined} setJoined={setJoined} />
       </div>
     </Layout>
   )

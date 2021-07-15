@@ -8,8 +8,10 @@ const io = require("socket.io")(server, {
   }
 });
 
+const room = require("./api/room").initalize();
+
 app.use("/api/users", require("./api/users"));
-app.use("/api/room", require("./api/room"));
+app.use("/api/room", room.router);
 
 server.listen(5000);
 
@@ -20,6 +22,15 @@ io.on("connection", socket => {
 
     socket.on("disconnect", () => {
       socket.broadcast.to(roomId).emit("user-disconnected", userId);
-    })
+    });
+
+    socket.on("leave-room", () => {
+      socket.broadcast.to(roomId).emit("user-disconnected", userId);
+      room.removeUser(userId);
+    });
   });
+
+  socket.on("alert-create-room", () => {
+    io.emit("create-room-success");
+  })
 })

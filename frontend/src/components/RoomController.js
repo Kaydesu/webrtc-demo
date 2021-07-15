@@ -47,6 +47,7 @@ export const RoomController = ({ setJoined }) => {
   const [roomList, setRoomList] = useState([]);
 
   useEffect(() => {
+    peer.onNewRoom(getRooms);
     getRooms();
   }, []);
 
@@ -62,9 +63,8 @@ export const RoomController = ({ setJoined }) => {
     setRoomList(res.data.rooms);
   }
 
-  const createRoom = async () => {
-    await ApiService.createRoom();
-    getRooms();
+  const createRoom = () => {
+    peer.createNewRoom();
   }
 
   const onClickJoin = async (roomId) => {
