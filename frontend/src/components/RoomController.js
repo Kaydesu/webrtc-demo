@@ -41,7 +41,7 @@ const RoomList = styled.ul`
   margin: 0;
 `
 
-export const RoomController = ({ setJoined }) => {
+export const RoomController = ({ joined, setJoined }) => {
 
   const peer = usePeerContext();
   const [roomList, setRoomList] = useState([]);
@@ -54,7 +54,7 @@ export const RoomController = ({ setJoined }) => {
   const renderRoomListItem = (item) => {
     return <>
       <div className="room-name">{item}</div>
-      <Button onClick={() => onClickJoin(item)}>Join</Button>
+      <Button onClick={() => onClickJoin(item)} disabled={joined}>Join</Button>
     </>
   }
 

@@ -33,6 +33,20 @@ const Wrapper = styled.div`
     grid-auto-rows: 150px;
     grid-gap: 15px;
 
+    >div {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      span {
+        position:absolute;
+        left: 5px;
+        top: 5px;
+        font-weight: 500;
+        font-size: 16px;
+        z-index: 20;
+        color: red;
+      }
+    }
     video {
       width: 100%;
       height: 100%;
@@ -82,10 +96,18 @@ export const RoomMeeting = ({ joined, setJoined }) => {
       if (!streamIdList.current.includes(stream.id)) {
         const video = document.createElement("video");
         video.srcObject = stream;
-        video.play();
-        videoGrid.current.append(video);
-        videoList.current[stream.userId] = video;
-        idList.push(stream.id);
+        video.play()
+
+        const nameTag = document.createElement("span");
+        nameTag.innerText = stream.userId;
+
+        const videoWrapper = document.createElement("div");
+        videoWrapper.append(nameTag);
+        videoWrapper.append(video);
+
+        videoGrid.current.append(videoWrapper);
+        videoList.current[stream.userId] = videoWrapper;
+
       }
     })
     streamIdList.current = [...idList]

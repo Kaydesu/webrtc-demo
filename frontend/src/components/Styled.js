@@ -25,6 +25,10 @@ export const Button = styled.button`
   background-color: #358fd7;
   padding: 12px 16px;
   cursor: pointer;
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 `
 
 export const Input = styled.input`
