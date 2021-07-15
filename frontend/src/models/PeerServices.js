@@ -23,9 +23,10 @@ export class PeerManager {
     });
 
     this._instance.on("call", call => {
+      this.peers[call.peer] = call;
       call.answer(this.stream);
       call.on("stream", remoteStream => {
-        this.addRemoteStream(id, remoteStream);
+        this.addRemoteStream(call.peer, remoteStream);
       })
     })
 
@@ -71,17 +72,20 @@ export class PeerManager {
     });
 
     this.socket.on("user-disconnected", userId => {
-      if (this.peers[userId]) {
-        this.peers[userId].close();
-      }
+      this.peers[userId].close();
       this.dispatchEvent("onUserDisconnected", { userId: userId });
+      const index = this.remoteStreams.findIndex(stream => stream.userId === userId);
+      if(index > -1) {
+        this.remoteStreams.splice(index, 1);
+      }
     })
   }
 
-  leaveRoom(roomId) {
+  leaveRoom(roomId, userId) {
     this.socket.emit("leave-room", roomId, this.id);
     this.stream.getTracks()[0].stop();
     this.stream.getTracks()[1].stop();
+    this.remoteStreams = [];
   }
 
   createNewRoom() {

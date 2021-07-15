@@ -69,7 +69,7 @@ export const RoomMeeting = ({ joined, setJoined }) => {
 
   const removeVideo = (e) => {
     const id = e.detail.userId;
-    if(videoList.current[id]) {
+    if (videoList.current[id]) {
       videoList.current[id].remove();
       delete videoList.current[id];
     }
@@ -77,9 +77,7 @@ export const RoomMeeting = ({ joined, setJoined }) => {
 
   const renderPeerVideos = (e) => {
     const streams = e.detail.streams;
-
     const idList = [];
-
     streams.map((stream) => {
       if (!streamIdList.current.includes(stream.id)) {
         const video = document.createElement("video");
@@ -96,6 +94,7 @@ export const RoomMeeting = ({ joined, setJoined }) => {
   const leaveRoom = () => {
     peer.leaveRoom();
     setJoined(false);
+    streamIdList.current = [];
   }
 
   return joined && (
